@@ -2,6 +2,8 @@ package com.telefonica.hunting;
 
 
 
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -19,6 +21,7 @@ public class Challenge {
 
     //private static Logger log = LoggerFactory.getLogger(Challenge.class);
 
+    // TODO: set as static to test locally
     private static class MySequence<T extends Comparable<? super T>> {
         private List<T> dups = new ArrayList<T>();
         List<T> unique = new ArrayList();
@@ -27,9 +30,10 @@ public class Challenge {
         }
 
         public void add(T n){
-            binaryAdd(n);
+            simpleAdd(n);
         }
 
+        //TODO: This solution should be used if memory is not a problem, in case of limitation use simpleAdd instead, as sorting uses additional heap space
         private void binaryAdd(T n) {
             List<T> sorted = unique;
             Collections.sort(sorted);
@@ -44,7 +48,8 @@ public class Challenge {
             }
 
         }
-        @Deprecated
+
+        // This solution is slightly slower, but uses less memory
         private void simpleAdd(T n) {
             List<T> sorted = unique;
             if (unique.contains(n)){
@@ -84,6 +89,7 @@ public class Challenge {
         stepsOfTheChallenge.add(SEND);
     }
 
+    // TODO: set as static to test locally
     public static void main(String[] args) {
         System.out.println("Help DOC : " + "This is an example of a possible MySequence instance use");
         MySequence s = new MySequence();
@@ -106,6 +112,8 @@ public class Challenge {
         s.getFirstNonDuplicated();
         s.getFirstNonDuplicated();
         s.clean();
+        // ENDOF warm-up
+        System.out.println("-------------- Worst case, around 100% new inserts");
         long total = 0;
         for (int i = 0; i < 10; i++) {
             long time = System.currentTimeMillis();
@@ -124,6 +132,27 @@ public class Challenge {
             s.clean();
         }
         System.out.println("AVG:" + (total / 10));
+
+        System.out.println("-------------- Best case, around 0% new inserts");
+        total = 0;
+        for (int i = 0; i < 10; i++) {
+            long time = System.currentTimeMillis();
+            IntStream.range(0, 50000).forEach(x -> s.add(rdn.nextInt() % 100));
+            total += (System.currentTimeMillis() - time);
+            System.out.println("Total Time simple unsorted: " + (System.currentTimeMillis() - time));
+            s.clean();
+        }
+        System.out.println("AVG:" + (total / 10));
+        total = 0;
+        for (int i = 0; i < 10; i++) {
+            long time = System.currentTimeMillis();
+            IntStream.range(0, 50000).forEach(x -> s.binaryAdd(rdn.nextInt() % 100));
+            total+=(System.currentTimeMillis() - time);
+            System.out.println("Total Time binary search: " + (System.currentTimeMillis() - time));
+            s.clean();
+        }
+        System.out.println("AVG:" + (total / 10));
+
     }
 
 }
